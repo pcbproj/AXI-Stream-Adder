@@ -6,8 +6,9 @@
   `define WIDTH 4
 `endif
 
-// ширина шины AXI-Stream интерфейса
-`define AXIS_WIDTH $ceil($itor(`WIDTH)/8)*8
+// ширина шины входных и выходных AXI-Stream интерфейсов
+`define AXIS_IN_WIDTH $ceil($itor(`WIDTH)/8)*8
+`define AXIS_OUT_WIDTH $ceil($itor(`WIDTH+1)/8)*8
 
 // число транзакций в тесте
 `ifndef TRANS_NUMBER
