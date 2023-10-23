@@ -13,9 +13,9 @@ module adder_axis_tb ();
   wire data1_i_tready, data2_i_tready, data_o_tvalid;
 
   // слагаемые и результат суммы
-  reg  [ `AXIS_WIDTH-1:0] data1_i_tdata;
-  reg  [ `AXIS_WIDTH-1:0] data2_i_tdata;
-  wire [ `AXIS_WIDTH-1:0] data_o_tdata;
+  reg  [ `AXIS_IN_WIDTH-1:0]  data1_i_tdata;
+  reg  [ `AXIS_IN_WIDTH-1:0]  data2_i_tdata;
+  wire [ `AXIS_OUT_WIDTH-1:0] data_o_tdata;
 
   // начальное состояние генератора случайных чисел
   integer seed = `SEED;
