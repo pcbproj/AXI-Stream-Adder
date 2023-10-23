@@ -1,5 +1,5 @@
 //! Конечный автомат управления служебными сигналами сумматора
-//! с AXI-Stream интерфейсами. Модуль управляет загрузкой данных
+//! с AXI-Stream интерфейсами. Модуль упарвляет загрузкой данных
 //! во внутренние регитры сумматора и формирует tvalid и tready
 //! сигналы
 module adder_axis_cu (
@@ -23,48 +23,72 @@ module adder_axis_cu (
     input  data_o_tready   //! сигнал готовности принять данные @end
 );
 
-  wire data1_i_reg_valid; //! сигнал готовности первого слагаемого во входном регистре
-  wire data2_i_reg_valid; //! сигнал готовности второго слагаемого во входном регистре
-  wire data_o_reg_ready;  //! сигнал готовности выходного регистра принять данные
+  localparam IDLE = 3'b000;               //! состояние сброса устройста
+  localparam WAIT_INPUT_DATA = 3'b001;    //! состояние готовности получать слагаемые
+  localparam WAIT_DATA1_INPUT = 3'b010;   //! состояние после получения второго слагаемого и ожидание первого
+  localparam WAIT_DATA2_INPUT = 3'b011;   //! состояние после получения первого слагаемого и ожидание второго
+  localparam LOAD_OUTPUT_DATA = 3'b100;   //! состояние после получения слагаемых и формированя суммы
+  localparam WAIT_OUTPUT_READY = 3'b101;  //! состояние j;blfybz,когда следующий блок заберет результат суммы
 
-  wire start_summation;   //! сигнал готовности выпонить суммирование слагаемых
+  //! состояние конечного автомата
+  reg [2:0] state;
 
-  //! конечный автомат управления загрузкой входного регистра для первого слагаемого
-  axis_inf_cu data1_i_cu (
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .load_en(data1_i_ce),
-    .upstream_tready(data1_i_tready),
-    .upstream_tvalid(data1_i_tvalid),
-    .downstream_tready(start_summation),
-    .downstream_tvalid(data1_i_reg_valid)
-  );
+  //! логика перехода между состояними автомата
+  always @(posedge aclk or negedge aresetn) begin : FSM_State_Transition
+    if (!aresetn) state <= IDLE;
+    else
+      case (state)
+        // после сброса ожидаем входные слагаемые
+        IDLE:
+          state <= WAIT_INPUT_DATA;
 
-  //! конечный автомат управления загрузкой входного регистра для второго слагаемого
-  axis_inf_cu data2_i_cu (
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .load_en(data2_i_ce),
-    .upstream_tready(data2_i_tready),
-    .upstream_tvalid(data2_i_tvalid),
-    .downstream_tready(start_summation),
-    .downstream_tvalid(data2_i_reg_valid)
-  );
+        // каждом такте можем получить первое слагаемое,
+        // второе слагаемое или сразу оба. от этого зависит следующее
+        // состояние. наличие входных данных определяется по
+        // сигнал tvalid
+        WAIT_INPUT_DATA:
+          if (data1_i_tvalid && data2_i_tvalid) state <= LOAD_OUTPUT_DATA;
+          else if (data1_i_tvalid) state <= WAIT_DATA2_INPUT;
+          else if (data2_i_tvalid) state <= WAIT_DATA1_INPUT;
 
-  //! конечный автомат управления загрузкой выходного регистра
-  axis_inf_cu data_o_cu (
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .load_en(data_o_ce),
-    .upstream_tready(data_o_reg_ready),
-    .upstream_tvalid(start_summation),
-    .downstream_tready(data_o_tready),
-    .downstream_tvalid(data_o_tvalid)
-  );
+        // второе слагаемое получили, ждем первое слагаемое
+        WAIT_DATA1_INPUT:
+          if (data1_i_tvalid) state <= LOAD_OUTPUT_DATA;
 
-  // выполнять сложение можно, если входные регистры содержат данные и выходной
-  // регистр готов их принять
-  assign start_summation = data1_i_reg_valid & data2_i_reg_valid & data_o_reg_ready;
+        // первое слагаемое получили, ждем второе слагаемое
+        WAIT_DATA2_INPUT:
+          if (data2_i_tvalid) state <= LOAD_OUTPUT_DATA;
+
+        // получили оба слагаемых. считаем сумму и загружаем
+        // результат в выходной регистр
+        LOAD_OUTPUT_DATA:
+          state <= WAIT_OUTPUT_READY;
+
+        // ожидаем готовности приемника получить результат суммы
+        WAIT_OUTPUT_READY:
+          if (data_o_tready) state <= WAIT_INPUT_DATA;
+
+        default:
+          state <= WAIT_INPUT_DATA;
+
+      endcase
+  end
+
+  // пока не получено первое слагаемое его можно получить по AXI-Stream
+  // и загрузить во входной внутренний регистр сумматора
+  assign data1_i_ce = (state == WAIT_INPUT_DATA) || (state == WAIT_DATA1_INPUT);
+  assign data1_i_tready = data1_i_ce;
+
+  // пока не получено второе слагаемое его можно получить по AXI-Stream
+  // и загрузить во входной внутренний регистр сумматора
+  assign data2_i_ce = (state == WAIT_INPUT_DATA) || (state == WAIT_DATA2_INPUT);
+  assign data2_i_tready = data2_i_ce;
+
+  // загружаем резльтат суммы, после получения обоих слагаемых
+  assign data_o_ce = (state == LOAD_OUTPUT_DATA);
+
+  // после загрузки суммы в выходной регистр устанавливаем сигнал валидности
+  assign data_o_tvalid = (state == WAIT_OUTPUT_READY);
 
 endmodule
 

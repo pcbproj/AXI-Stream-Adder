@@ -36,7 +36,7 @@ module adder_axis_tb ();
   reg error_flag = 1'b0;
 
   // проверяемый модуль
-  adder_axis_pipe #(
+  adder_axis_naive #(
       .ADDER_WIDTH(`WIDTH)
   ) dut (
       .aclk          (aclk),

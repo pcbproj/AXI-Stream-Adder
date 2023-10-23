@@ -1,9 +1,10 @@
-//! Усовершенствованный сумматор с AXI-Stream интерфейсами. Добавлена конвейеризация
-//! загрузки слагаемых во входные регистры и вывод результатов сложения наружу. 
+//! Простой сумматор с AXI-Stream интерфейсами.
 //! Разрядность результата суммирования на один бит больше разрядности слагаемых.
 //! В соответсвие со стандартом на AXI-Stream ширина шины tdata должна быть кратна 8.aclk
 
-module adder_axis_pipe #(
+
+
+module adder_axis_naive #(
   parameter integer ADDER_WIDTH = 4,                                        //! разрядность слагаемых
   parameter integer IN_AXIS_WIDTH  = $ceil($itor(ADDER_WIDTH) / 8) * 8,     //! разрядность шины tdata для слагаемых
   parameter integer OUT_AXIS_WIDTH  = $ceil($itor(ADDER_WIDTH+1) / 8) * 8   //! разрядность шины tdata для суммы

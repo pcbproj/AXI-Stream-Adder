@@ -6,9 +6,10 @@ all:
 
 # сборка проекта
 build:
-	iverilog src/adder_comb.v src/adder_axis_cu.v src/axis_inf_cu.v src/adder_axis_pipe.v tests/adder_axis_tb.v \
+	iverilog src/adder_comb.v src/adder_axis_cu.v src/adder_axis_naive.v tests/adder_axis_tb.v \
 	-o adder_snap \
-	-I tests
+	-I tests \
+	-D SEED=$(shell bash -c 'echo $$RANDOM')
 
 # моделирование проекта
 sim:
