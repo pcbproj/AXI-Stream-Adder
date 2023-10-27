@@ -144,21 +144,17 @@ module adder_axis_tb ();
   // COLLECTOR 1
   // запись данных на data1_i интерфейсе
   always begin
-    while (1) begin
       @(data1_i_e);
       axis_data1[axis_data1_cnt] = data1_i_tdata;
       axis_data1_cnt = axis_data1_cnt + 1;
-    end
   end
 
   // COLLECTOR 2
   // запись данных на data1_i интерфейсе
   always begin
-    while (1) begin
       @(data2_i_e);
       axis_data2[axis_data2_cnt] = data2_i_tdata;
       axis_data2_cnt = axis_data2_cnt + 1;
-    end
   end
 
   // CHECKER
@@ -166,13 +162,10 @@ module adder_axis_tb ();
   // сохраненные слагаемые, выполняем эталонное суммирование
   // и сравниваем результаты. Выполняем проверку на завершение теста
   always begin
-    while (1) begin
       @(data_o_e);
       compare(axis_data1[trans_cnt], axis_data2[trans_cnt], data_o_tdata, error_flag);
       trans_cnt = trans_cnt + 1;
       check_finish(trans_cnt, `TRANS_NUMBER, error_flag);
-    end
-
   end
 
   // сторожевой таймер для отслеживания зависания теста
