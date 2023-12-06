@@ -1,1 +1,10 @@
-
+name: AXIS-Adder Pre-Commit Workflow
+on: workflow_dispatch
+jobs:
+  AXIS-Adder-Pre-Commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Check out repository code
+        run: echo "Hello"
