@@ -11,4 +11,11 @@ jobs:
       - name: Build
         run: make build
       - name: Simulation
-        run: make sim
+        run: make sim | tee log.txt
+      - name: Check Results
+        run: |
+          if grep -q PASS log.txt; then
+            exit 0
+          else
+            exit 1
+          fi
