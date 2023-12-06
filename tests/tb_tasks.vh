@@ -9,7 +9,7 @@ task gold_adder(input integer data1_i, input integer data2_i, output integer dat
   begin
     in_1 = data1_i[`WIDTH-1:0];
     in_2 = data2_i[`WIDTH-1:0];
-    data_o = in_1 + in_2;
+    data_o = in_1 + in_2 + 1;
   end
 endtask
 
