@@ -1,0 +1,28 @@
+name: AXIS-Adder Pre-Commit Workflow
+on: 
+  workflow_dispatch:
+  pull_request:
+    branches:    
+      - main
+jobs:
+  AXIS-Adder-Pre-Commit:
+    strategy:
+      matrix:
+        WIDTH: [4, 7, 12]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Install Icarus Verilog
+        run: sudo apt install iverilog
+      - name: Build
+        run: make build WIDTH=${{ matrix.WIDTH }}
+      - name: Simulation
+        run: make sim | tee log.txt
+      - name: Check Results
+        run: |
+          if grep -q PASS log.txt; then
+            exit 0
+          else
+            exit 1
+          fi

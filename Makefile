@@ -1,3 +1,5 @@
+WIDTH=4
+
 # сборка, моделирование и вывод waveforms
 all:
 	make build
@@ -6,7 +8,7 @@ all:
 
 # сборка проекта
 build:
-	iverilog src/adder_comb.v src/adder_axis_cu.v src/axis_inf_cu.v src/adder_axis_pipe.v tests/adder_axis_tb.v -o adder_snap -I tests
+	iverilog src/adder_comb.v src/adder_axis_cu.v src/axis_inf_cu.v src/adder_axis_pipe.v tests/adder_axis_tb.v -o adder_snap -I tests -DWIDTH=$(WIDTH)
 
 # моделирование проекта
 sim:
