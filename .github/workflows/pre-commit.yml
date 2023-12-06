@@ -7,4 +7,4 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
       - name: Install Icarus Verilog
-        run: apt install iverilog
+        run: sudo apt install iverilog
