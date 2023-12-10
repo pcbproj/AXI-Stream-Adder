@@ -10,6 +10,7 @@ jobs:
       matrix:
         WIDTH: [4, 7, 12]
     runs-on: ubuntu-latest
+    container: vshev92/iverilog:latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
