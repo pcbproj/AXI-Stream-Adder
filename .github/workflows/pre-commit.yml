@@ -2,8 +2,7 @@ name: AXIS-Adder Pre-Commit Workflow
 on: 
   workflow_dispatch:
   pull_request:
-    branches:    
-      - main
+    branches: main
 jobs:
   AXIS-Adder-Pre-Commit:
     strategy:
@@ -14,15 +13,24 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      - name: Install Icarus Verilog
-        run: sudo apt install iverilog
       - name: Build
-        run: make build WIDTH=${{ matrix.WIDTH }}
+        run: |
+          iverilog src/adder_comb.v \
+                   src/adder_axis_cu.v \
+                   src/axis_inf_cu.v \
+                   src/adder_axis_pipe.v \
+                   tests/adder_axis_tb.v \
+                   -I tests \
+                   -D WIDTH=${{ matrix.WIDTH }} \
+                   -o adder_snap
       - name: Simulation
-        run: make sim | tee log.txt
+        run: |
+          SEED=`rand`
+          echo $SEED
+          vvp adder_snap +seed=$SEED | tee log.txt
       - name: Check Results
         run: |
-          if grep -q PASS log.txt; then
+          if grep -q PASSED log.txt; then
             exit 0
           else
             exit 1
